@@ -26,9 +26,6 @@ type State = {
   adminLoggedIn: boolean;
 };
 
-export const DEMO_USER = { email: "user@demo.com", password: "user123" };
-export const DEMO_ADMIN = { username: "admin", password: "admin123" };
-
 const defaultState: State = {
   prizes: [],
   otps: [],
@@ -53,7 +50,7 @@ type Ctx = {
   logoutUser: () => Promise<void>;
   submitOtp: (code: string) => Promise<{ ok: boolean; error?: string }>;
   spin: () => Promise<{ ok: boolean; prize?: Prize; error?: string }>;
-  setAdmin: (v: boolean) => Promise<void>;
+  setAdmin: (v: boolean, username?: string, password?: string) => Promise<boolean>;
   currentUser: AppUser | null;
   currentOtp: Otp | null;
 };
@@ -87,20 +84,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       state,
       currentUser,
       currentOtp,
-      setAdmin: async (v) => {
+      setAdmin: async (v, username, password) => {
         const endpoint = v ? "/api/auth/admin-login" : "/api/auth/admin-logout";
         try {
           const res = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: "admin", password: "admin123" }),
+            body: JSON.stringify({ username, password }),
           });
           if (res.ok) {
             await syncState();
+            return true;
           }
         } catch (err) {
           console.error(err);
         }
+        return false;
       },
       addPrize: async (name, icon) => {
         try {

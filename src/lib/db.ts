@@ -49,16 +49,7 @@ const localState: LocalState = {
     { id: "p4", name: "Zonk", icon: "🎈" },
   ],
   otps: [],
-  users: [
-    {
-      email: "user@demo.com",
-      password: "user123",
-      otpCode: null,
-      prizesWon: [],
-      spins: 0,
-      createdAt: Date.now(),
-    },
-  ],
+  users: [],
 };
 
 export async function initDb() {
@@ -112,9 +103,9 @@ export async function initDb() {
       }
     }
 
-    // Seed default user if empty
+    // Seed default user if empty and defined
     const userCheck = await client.query("SELECT COUNT(*) FROM users");
-    if (parseInt(userCheck.rows[0].count, 10) === 0) {
+    if (parseInt(userCheck.rows[0].count, 10) === 0 && localState.users.length > 0) {
       console.log("Seeding default user in PostgreSQL...");
       const u = localState.users[0]!;
       await client.query(

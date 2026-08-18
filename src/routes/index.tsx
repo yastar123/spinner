@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Alert, Button, Card, Field, Input, PublicShell } from "@/components/ui-kit";
-import { DEMO_ADMIN, DEMO_USER, useStore } from "@/lib/store";
+import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -40,11 +40,15 @@ function Index() {
               setError("Email dan password wajib diisi");
               return;
             }
-            if (email.trim() === DEMO_ADMIN.username && password === DEMO_ADMIN.password) {
-              await setAdmin(true);
+
+            // Try admin login first dynamically
+            const isAdmin = await setAdmin(true, email.trim(), password);
+            if (isAdmin) {
               navigate({ to: "/admin" });
               return;
             }
+
+            // Fallback to user login
             const success = await loginUser(email.trim(), password);
             if (success) {
               navigate({ to: "/otp" });
@@ -73,39 +77,6 @@ function Index() {
             Masuk
           </Button>
         </form>
-
-        <div className="space-y-2 rounded-xl border border-border p-3">
-          <p className="text-sm font-medium">Akun demo</p>
-          <p className="text-xs text-muted-foreground">
-            User: {DEMO_USER.email} / {DEMO_USER.password}
-            <br />
-            Admin: {DEMO_ADMIN.username} / {DEMO_ADMIN.password}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="soft"
-              className="flex-1"
-              onClick={() => {
-                setEmail(DEMO_USER.email);
-                setPassword(DEMO_USER.password);
-              }}
-            >
-              Isi akun user
-            </Button>
-            <Button
-              type="button"
-              variant="soft"
-              className="flex-1"
-              onClick={() => {
-                setEmail(DEMO_ADMIN.username);
-                setPassword(DEMO_ADMIN.password);
-              }}
-            >
-              Isi akun admin
-            </Button>
-          </div>
-        </div>
       </Card>
     </PublicShell>
   );

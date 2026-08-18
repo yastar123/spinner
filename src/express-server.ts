@@ -47,7 +47,10 @@ app.get("/api/state", async (req, res) => {
 // Admin Login
 app.post("/api/auth/admin-login", (req, res) => {
   const { username, password } = req.body;
-  if (username === "admin" && password === "admin123") {
+  const expectedAdminEmail = process.env.ADMIN_EMAIL || "admin";
+  const expectedAdminPassword = process.env.ADMIN_PASSWORD || "admin123";
+
+  if (username === expectedAdminEmail && password === expectedAdminPassword) {
     adminLoggedIn = true;
     res.json({ ok: true });
   } else {
