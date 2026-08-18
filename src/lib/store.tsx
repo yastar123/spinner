@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 export type Prize = { id: string; name: string; icon: string };
 export type Otp = {
@@ -33,47 +26,34 @@ type State = {
   adminLoggedIn: boolean;
 };
 
-const KEY = "webull-spinner-state-v1";
-
-const uid = () => Math.random().toString(36).slice(2, 10);
-
 export const DEMO_USER = { email: "user@demo.com", password: "user123" };
 export const DEMO_ADMIN = { username: "admin", password: "admin123" };
 
 const defaultState: State = {
-  prizes: [
-    { id: uid(), name: "Bonus $10", icon: "💵" },
-    { id: uid(), name: "Free Stock", icon: "📈" },
-    { id: uid(), name: "Voucher 50%", icon: "🎟️" },
-    { id: uid(), name: "Zonk", icon: "🎈" },
-  ],
+  prizes: [],
   otps: [],
-  users: [
-    {
-      email: DEMO_USER.email,
-      password: DEMO_USER.password,
-      otpCode: null,
-      prizesWon: [],
-      spins: 0,
-      createdAt: Date.now(),
-    },
-  ],
+  users: [],
   currentEmail: null,
   adminLoggedIn: false,
 };
 
 type Ctx = {
   state: State;
-  addPrize: (name: string, icon: string) => void;
-  updatePrize: (id: string, name: string, icon: string) => void;
-  deletePrize: (id: string) => void;
-  createOtp: (code: string, prizeIds: string[], winningPrizeId: string | null, limit: number) => void;
-  deleteOtp: (code: string) => void;
-  loginUser: (email: string, password: string) => void;
-  logoutUser: () => void;
-  submitOtp: (code: string) => { ok: boolean; error?: string };
-  spin: () => { ok: boolean; prize?: Prize; error?: string };
-  setAdmin: (v: boolean) => void;
+  addPrize: (name: string, icon: string) => Promise<void>;
+  updatePrize: (id: string, name: string, icon: string) => Promise<void>;
+  deletePrize: (id: string) => Promise<void>;
+  createOtp: (
+    code: string,
+    prizeIds: string[],
+    winningPrizeId: string | null,
+    limit: number,
+  ) => Promise<void>;
+  deleteOtp: (code: string) => Promise<void>;
+  loginUser: (email: string, password: string) => Promise<boolean>;
+  logoutUser: () => Promise<void>;
+  submitOtp: (code: string) => Promise<{ ok: boolean; error?: string }>;
+  spin: () => Promise<{ ok: boolean; prize?: Prize; error?: string }>;
+  setAdmin: (v: boolean) => Promise<void>;
   currentUser: AppUser | null;
   currentOtp: Otp | null;
 };
@@ -82,116 +62,171 @@ const StoreContext = createContext<Ctx | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(defaultState);
-  const [loaded, setLoaded] = useState(false);
+
+  const syncState = async () => {
+    try {
+      const res = await fetch("/api/state");
+      if (res.ok) {
+        const data = await res.json();
+        setState(data);
+      }
+    } catch (err) {
+      console.error("Failed to sync store state with Express backend:", err);
+    }
+  };
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setState({ ...defaultState, ...JSON.parse(raw) });
-    } catch {
-      /* ignore */
-    }
-    setLoaded(true);
+    syncState();
   }, []);
 
-  useEffect(() => {
-    if (loaded) localStorage.setItem(KEY, JSON.stringify(state));
-  }, [state, loaded]);
-
   const value = useMemo<Ctx>(() => {
-    const currentUser =
-      state.users.find((u) => u.email === state.currentEmail) ?? null;
-    const currentOtp =
-      state.otps.find((o) => o.code === currentUser?.otpCode) ?? null;
+    const currentUser = state.users.find((u) => u.email === state.currentEmail) ?? null;
+    const currentOtp = state.otps.find((o) => o.code === currentUser?.otpCode) ?? null;
 
     return {
       state,
       currentUser,
       currentOtp,
-      setAdmin: (v) => setState((s) => ({ ...s, adminLoggedIn: v })),
-      addPrize: (name, icon) =>
-        setState((s) => ({
-          ...s,
-          prizes: [...s.prizes, { id: uid(), name, icon: icon || "🎁" }],
-        })),
-      updatePrize: (id, name, icon) =>
-        setState((s) => ({
-          ...s,
-          prizes: s.prizes.map((p) => (p.id === id ? { ...p, name, icon } : p)),
-        })),
-      deletePrize: (id) =>
-        setState((s) => ({ ...s, prizes: s.prizes.filter((p) => p.id !== id) })),
-      createOtp: (code, prizeIds, winningPrizeId, limit) =>
-        setState((s) => ({
-          ...s,
-          otps: [
-            { code, prizeIds, winningPrizeId, limit, used: 0, usedBy: null },
-            ...s.otps,
-          ],
-        })),
-      deleteOtp: (code) =>
-        setState((s) => ({ ...s, otps: s.otps.filter((o) => o.code !== code) })),
-      loginUser: (email, password) =>
-        setState((s) => {
-          const exists = s.users.some((u) => u.email === email);
-          return {
-            ...s,
-            currentEmail: email,
-            users: exists
-              ? s.users.map((u) => (u.email === email ? { ...u, password } : u))
-              : [
-                  ...s.users,
-                  {
-                    email,
-                    password,
-                    otpCode: null,
-                    prizesWon: [],
-                    spins: 0,
-                    createdAt: Date.now(),
-                  },
-                ],
-          };
-        }),
-      logoutUser: () => setState((s) => ({ ...s, currentEmail: null })),
-      submitOtp: (code) => {
-        const email = state.currentEmail;
-        if (!email) return { ok: false, error: "Silakan login terlebih dahulu" };
-        const otp = state.otps.find((o) => o.code === code.trim());
-        if (!otp) return { ok: false, error: "Kode OTP tidak valid" };
-        if (otp.usedBy && otp.usedBy !== email)
-          return { ok: false, error: "Kode OTP ini sudah digunakan oleh user lain" };
-        if (otp.used >= otp.limit)
-          return { ok: false, error: "Kuota spin untuk kode OTP ini sudah habis" };
-        setState((s) => ({
-          ...s,
-          otps: s.otps.map((o) => (o.code === otp.code ? { ...o, usedBy: email } : o)),
-          users: s.users.map((u) =>
-            u.email === email ? { ...u, otpCode: otp.code } : u,
-          ),
-        }));
-        return { ok: true };
+      setAdmin: async (v) => {
+        const endpoint = v ? "/api/auth/admin-login" : "/api/auth/admin-logout";
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: "admin", password: "admin123" }),
+          });
+          if (res.ok) {
+            await syncState();
+          }
+        } catch (err) {
+          console.error(err);
+        }
       },
-      spin: () => {
-        if (!currentUser || !currentOtp)
-          return { ok: false, error: "Kode OTP tidak ditemukan" };
-        if (currentOtp.used >= currentOtp.limit)
-          return { ok: false, error: "Kuota spin sudah habis" };
-        const prize =
-          state.prizes.find((p) => p.id === currentOtp.winningPrizeId) ??
-          state.prizes.find((p) => p.id === currentOtp.prizeIds[0]);
-        if (!prize) return { ok: false, error: "Hadiah belum dikonfigurasi admin" };
-        setState((s) => ({
-          ...s,
-          otps: s.otps.map((o) =>
-            o.code === currentOtp.code ? { ...o, used: o.used + 1 } : o,
-          ),
-          users: s.users.map((u) =>
-            u.email === currentUser.email
-              ? { ...u, spins: u.spins + 1, prizesWon: [...u.prizesWon, prize.name] }
-              : u,
-          ),
-        }));
-        return { ok: true, prize };
+      addPrize: async (name, icon) => {
+        try {
+          const res = await fetch("/api/prizes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, icon }),
+          });
+          if (res.ok) {
+            await syncState();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      updatePrize: async (id, name, icon) => {
+        try {
+          const res = await fetch(`/api/prizes/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, icon }),
+          });
+          if (res.ok) {
+            await syncState();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      deletePrize: async (id) => {
+        try {
+          const res = await fetch(`/api/prizes/${id}`, {
+            method: "DELETE",
+          });
+          if (res.ok) {
+            await syncState();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      createOtp: async (code, prizeIds, winningPrizeId, limit) => {
+        try {
+          const res = await fetch("/api/otps", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code, prizeIds, winningPrizeId, limit }),
+          });
+          if (res.ok) {
+            await syncState();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      deleteOtp: async (code) => {
+        try {
+          const res = await fetch(`/api/otps/${code}`, {
+            method: "DELETE",
+          });
+          if (res.ok) {
+            await syncState();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      loginUser: async (email, password) => {
+        try {
+          const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+          if (res.ok) {
+            await syncState();
+            return true;
+          }
+        } catch (err) {
+          console.error(err);
+        }
+        return false;
+      },
+      logoutUser: async () => {
+        try {
+          const res = await fetch("/api/auth/user-logout", {
+            method: "POST",
+          });
+          if (res.ok) {
+            await syncState();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      submitOtp: async (code) => {
+        try {
+          const res = await fetch("/api/auth/submit-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            await syncState();
+            return { ok: true };
+          }
+          return { ok: false, error: data.error || "Gagal verifikasi OTP" };
+        } catch (err) {
+          return { ok: false, error: "Gagal menghubungkan ke server" };
+        }
+      },
+      spin: async () => {
+        try {
+          const res = await fetch("/api/spin", {
+            method: "POST",
+          });
+          const data = await res.json();
+          if (res.ok) {
+            await syncState();
+            return { ok: true, prize: data.prize };
+          }
+          return { ok: false, error: data.error || "Gagal spin" };
+        } catch (err) {
+          return { ok: false, error: "Gagal menghubungkan ke server" };
+        }
       },
     };
   }, [state]);

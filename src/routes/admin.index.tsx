@@ -7,7 +7,10 @@ export const Route = createFileRoute("/admin/")({
   head: () => ({
     meta: [
       { title: "Dashboard Admin — Webull Spinner" },
-      { name: "description", content: "Ringkasan hadiah, kode OTP, dan user pada demo Webull Spinner." },
+      {
+        name: "description",
+        content: "Ringkasan hadiah, kode OTP, dan user pada demo Webull Spinner.",
+      },
       { property: "og:title", content: "Dashboard Admin — Webull Spinner" },
       { property: "og:description", content: "Ringkasan hadiah, kode OTP, dan user." },
     ],

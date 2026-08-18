@@ -44,16 +44,20 @@ function PrizesPage() {
           <h2 className="font-medium">{editingId ? "Ubah Hadiah" : "Tambah Hadiah"}</h2>
           <form
             className="space-y-4"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               if (!name.trim()) return;
-              if (editingId) updatePrize(editingId, name, icon || "🎁");
-              else addPrize(name, icon);
+              if (editingId) await updatePrize(editingId, name, icon || "🎁");
+              else await addPrize(name, icon);
               reset();
             }}
           >
             <Field label="Nama Hadiah">
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Bonus $10" />
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Bonus $10"
+              />
             </Field>
             <Field label="Gambar Hadiah">
               <input
@@ -112,7 +116,7 @@ function PrizesPage() {
                   >
                     Ubah
                   </Button>
-                  <Button variant="danger" onClick={() => deletePrize(p.id)}>
+                  <Button variant="danger" onClick={async () => await deletePrize(p.id)}>
                     Hapus
                   </Button>
                 </li>

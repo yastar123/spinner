@@ -8,9 +8,15 @@ export const Route = createFileRoute("/admin/otp")({
   head: () => ({
     meta: [
       { title: "Kode OTP — Webull Spinner" },
-      { name: "description", content: "Generate kode OTP dengan konfigurasi hadiah dan limit spin." },
+      {
+        name: "description",
+        content: "Generate kode OTP dengan konfigurasi hadiah dan limit spin.",
+      },
       { property: "og:title", content: "Kode OTP — Webull Spinner" },
-      { property: "og:description", content: "Generate kode OTP dengan konfigurasi hadiah dan limit spin." },
+      {
+        property: "og:description",
+        content: "Generate kode OTP dengan konfigurasi hadiah dan limit spin.",
+      },
     ],
   }),
   component: OtpAdminPage,
@@ -38,13 +44,19 @@ function OtpAdminPage() {
           {error && <Alert>{error}</Alert>}
           <Field label="Kode OTP">
             <div className="flex gap-2">
-              <Input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} maxLength={6} />
+              <Input
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                maxLength={6}
+              />
               <Button variant="soft" type="button" onClick={() => setCode(nextCode())}>
                 Acak
               </Button>
             </div>
             {duplicate && (
-              <p className="mt-1 text-xs text-destructive">Kode ini sudah tersimpan, gunakan kode lain.</p>
+              <p className="mt-1 text-xs text-destructive">
+                Kode ini sudah tersimpan, gunakan kode lain.
+              </p>
             )}
           </Field>
           <Field label="Limit Spin">
@@ -78,11 +90,11 @@ function OtpAdminPage() {
           <Button
             className="w-full"
             disabled={duplicate || code.length !== 6 || !selected}
-            onClick={() => {
+            onClick={async () => {
               if (code.length !== 6) return setError("Kode OTP harus 6 digit");
               if (state.otps.some((o) => o.code === code)) return setError("Kode sudah ada");
               if (!selected) return setError("Pilih 1 hadiah");
-              createOtp(code, [selected], selected, limit);
+              await createOtp(code, [selected], selected, limit);
               setError("");
               setCode(nextCode());
               setSelected(null);
@@ -133,7 +145,7 @@ function OtpAdminPage() {
                         <Badge tone={status.tone}>{status.label}</Badge>
                       </td>
                       <td className="text-right">
-                        <Button variant="danger" onClick={() => deleteOtp(o.code)}>
+                        <Button variant="danger" onClick={async () => await deleteOtp(o.code)}>
                           Hapus
                         </Button>
                       </td>

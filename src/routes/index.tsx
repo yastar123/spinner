@@ -33,7 +33,7 @@ function Index() {
         </div>
         <form
           className="space-y-4"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             setError("");
             if (!email || !password) {
@@ -41,12 +41,16 @@ function Index() {
               return;
             }
             if (email.trim() === DEMO_ADMIN.username && password === DEMO_ADMIN.password) {
-              setAdmin(true);
+              await setAdmin(true);
               navigate({ to: "/admin" });
               return;
             }
-            loginUser(email.trim(), password);
-            navigate({ to: "/otp" });
+            const success = await loginUser(email.trim(), password);
+            if (success) {
+              navigate({ to: "/otp" });
+            } else {
+              setError("Gagal masuk, silakan periksa kredensial Anda");
+            }
           }}
         >
           {error && <Alert>{error}</Alert>}

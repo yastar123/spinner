@@ -7,9 +7,15 @@ export const Route = createFileRoute("/admin/users")({
   head: () => ({
     meta: [
       { title: "Data User — Webull Spinner" },
-      { name: "description", content: "Daftar user login beserta kode OTP dan hadiah yang didapat." },
+      {
+        name: "description",
+        content: "Daftar user login beserta kode OTP dan hadiah yang didapat.",
+      },
       { property: "og:title", content: "Data User — Webull Spinner" },
-      { property: "og:description", content: "Daftar user login beserta kode OTP dan hadiah yang didapat." },
+      {
+        property: "og:description",
+        content: "Daftar user login beserta kode OTP dan hadiah yang didapat.",
+      },
     ],
   }),
   component: UsersPage,

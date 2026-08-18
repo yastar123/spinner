@@ -3,24 +3,13 @@ import { cn } from "@/lib/utils";
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <div
-      className={cn(
-        "rounded-[2rem] border border-border bg-card p-6 shadow-tile",
-        className,
-      )}
-    >
+    <div className={cn("rounded-[2rem] border border-border bg-card p-6 shadow-tile", className)}>
       {children}
     </div>
   );
 }
 
-export function Tile({
-  className,
-  children,
-}: {
-  className?: string;
-  children: ReactNode;
-}) {
+export function Tile({ className, children }: { className?: string; children: ReactNode }) {
   return (
     <div className={cn("rounded-[1.5rem] border border-border bg-card p-5", className)}>
       {children}
@@ -40,7 +29,9 @@ export function Button({
   className,
   variant = "primary",
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "soft" | "ghost" | "danger" }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "primary" | "soft" | "ghost" | "danger";
+}) {
   const variants = {
     primary: "bg-primary text-primary-foreground shadow-accent hover:brightness-95",
     soft: "border border-border bg-card text-secondary-foreground hover:border-primary/40 hover:text-primary",
@@ -90,16 +81,20 @@ export function Alert({ children }: { children: ReactNode }) {
   );
 }
 
-export function Badge({ children, tone = "sky" }: { children: ReactNode; tone?: "sky" | "muted" | "warn" }) {
+export function Badge({
+  children,
+  tone = "sky",
+}: {
+  children: ReactNode;
+  tone?: "sky" | "muted" | "warn";
+}) {
   const tones = {
     sky: "bg-accent text-accent-foreground",
     muted: "bg-muted text-muted-foreground",
     warn: "bg-destructive/10 text-destructive",
   } as const;
   return (
-    <span className={cn("rounded-full px-3 py-1 text-xs font-bold", tones[tone])}>
-      {children}
-    </span>
+    <span className={cn("rounded-full px-3 py-1 text-xs font-bold", tones[tone])}>{children}</span>
   );
 }
 
@@ -116,7 +111,15 @@ export function PublicShell({ children }: { children: ReactNode }) {
     </main>
   );
 }
-export function PrizeIcon({ icon, name, className }: { icon: string; name?: string; className?: string }) {
+export function PrizeIcon({
+  icon,
+  name,
+  className,
+}: {
+  icon: string;
+  name?: string;
+  className?: string;
+}) {
   if (icon?.startsWith("data:") || icon?.startsWith("http")) {
     return (
       <img

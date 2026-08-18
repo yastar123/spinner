@@ -7,9 +7,15 @@ export const Route = createFileRoute("/spinner")({
   head: () => ({
     meta: [
       { title: "Spin Hadiah — Webull Spinner" },
-      { name: "description", content: "Putar roda dan menangkan hadiah sesuai kuota kode OTP Anda." },
+      {
+        name: "description",
+        content: "Putar roda dan menangkan hadiah sesuai kuota kode OTP Anda.",
+      },
       { property: "og:title", content: "Spin Hadiah — Webull Spinner" },
-      { property: "og:description", content: "Putar roda dan menangkan hadiah sesuai kuota kode OTP Anda." },
+      {
+        property: "og:description",
+        content: "Putar roda dan menangkan hadiah sesuai kuota kode OTP Anda.",
+      },
     ],
   }),
   component: SpinnerPage,
@@ -39,15 +45,17 @@ function SpinnerPage() {
   const remaining = currentOtp.limit - currentOtp.used;
   const seg = prizes.length ? 360 / prizes.length : 360;
 
-  const handleSpin = () => {
+  const handleSpin = async () => {
     setError("");
-    const target = prizes.findIndex((p) => p.id === winningId);
-    const res = spin();
+    setSpinning(true);
+    const res = await spin();
     if (!res.ok) {
       setError(res.error ?? "Gagal");
+      setSpinning(false);
       return;
     }
-    setSpinning(true);
+    const finalPrizeId = res.prize?.id ?? winningId;
+    const target = prizes.findIndex((p) => p.id === finalPrizeId);
     const idx = target >= 0 ? target : 0;
     const final = 360 * 6 - (idx * seg + seg / 2);
     setAngle((a) => a + (final - (a % 360)) + 360);
@@ -59,10 +67,7 @@ function SpinnerPage() {
 
   const gradient = prizes.length
     ? `conic-gradient(${prizes
-        .map(
-          (_, i) =>
-            `${SEGMENT_COLORS[i % 2]} ${i * seg}deg ${(i + 1) * seg}deg`,
-        )
+        .map((_, i) => `${SEGMENT_COLORS[i % 2]} ${i * seg}deg ${(i + 1) * seg}deg`)
         .join(", ")})`
     : "conic-gradient(oklch(0.9 0.06 225) 0deg 360deg)";
 
@@ -102,7 +107,9 @@ function SpinnerPage() {
                     className="flex flex-col items-center gap-1"
                     style={{
                       transform: `rotate(${-angle}deg)`,
-                      transition: spinning ? "transform 4s cubic-bezier(0.15,0.9,0.2,1)" : undefined,
+                      transition: spinning
+                        ? "transform 4s cubic-bezier(0.15,0.9,0.2,1)"
+                        : undefined,
                     }}
                   >
                     <PrizeIcon icon={p.icon} name={p.name} className="h-5 w-5" />
@@ -128,8 +135,8 @@ function SpinnerPage() {
         <Button
           variant="ghost"
           className="w-full"
-          onClick={() => {
-            logoutUser();
+          onClick={async () => {
+            await logoutUser();
             navigate({ to: "/login" });
           }}
         >
@@ -140,7 +147,9 @@ function SpinnerPage() {
       {result && !spinning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 px-4">
           <Card className="w-full max-w-sm space-y-4 text-center">
-            <div className="text-5xl"><PrizeIcon icon={result.icon} name={result.name} className="mx-auto h-20 w-20" /></div>
+            <div className="text-5xl">
+              <PrizeIcon icon={result.icon} name={result.name} className="mx-auto h-20 w-20" />
+            </div>
             <h3 className="text-lg font-semibold">Selamat!</h3>
             <p className="text-sm text-muted-foreground">Anda mendapatkan {result.name}</p>
             <Button className="w-full" onClick={() => setResult(null)}>

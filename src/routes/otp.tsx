@@ -7,9 +7,15 @@ export const Route = createFileRoute("/otp")({
   head: () => ({
     meta: [
       { title: "Verifikasi OTP — Webull Spinner" },
-      { name: "description", content: "Masukkan kode OTP 6 digit dari admin untuk membuka spinner." },
+      {
+        name: "description",
+        content: "Masukkan kode OTP 6 digit dari admin untuk membuka spinner.",
+      },
       { property: "og:title", content: "Verifikasi OTP — Webull Spinner" },
-      { property: "og:description", content: "Masukkan kode OTP 6 digit dari admin untuk membuka spinner." },
+      {
+        property: "og:description",
+        content: "Masukkan kode OTP 6 digit dari admin untuk membuka spinner.",
+      },
     ],
   }),
   component: OtpPage,
@@ -38,9 +44,10 @@ function OtpPage() {
         </div>
         <form
           className="space-y-4"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            const res = submitOtp(code);
+            setError("");
+            const res = await submitOtp(code);
             if (!res.ok) setError(res.error ?? "Gagal");
             else navigate({ to: "/spinner" });
           }}
