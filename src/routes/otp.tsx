@@ -6,12 +6,12 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/otp")({
   head: () => ({
     meta: [
-      { title: "Verifikasi OTP — Webull Spinner" },
+      { title: "Verifikasi OTP — Webull Ƨpinner" },
       {
         name: "description",
         content: "Masukkan kode OTP 6 digit dari admin untuk membuka spinner.",
       },
-      { property: "og:title", content: "Verifikasi OTP — Webull Spinner" },
+      { property: "og:title", content: "Verifikasi OTP — Webull Ƨpinner" },
       {
         property: "og:description",
         content: "Masukkan kode OTP 6 digit dari admin untuk membuka spinner.",

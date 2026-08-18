@@ -6,12 +6,12 @@ import { useStore, type Prize } from "@/lib/store";
 export const Route = createFileRoute("/spinner")({
   head: () => ({
     meta: [
-      { title: "Spin Hadiah — Webull Spinner" },
+      { title: "Spin Hadiah — Webull Ƨpinner" },
       {
         name: "description",
         content: "Putar roda dan menangkan hadiah sesuai kuota kode OTP Anda.",
       },
-      { property: "og:title", content: "Spin Hadiah — Webull Spinner" },
+      { property: "og:title", content: "Spin Hadiah — Webull Ƨpinner" },
       {
         property: "og:description",
         content: "Putar roda dan menangkan hadiah sesuai kuota kode OTP Anda.",

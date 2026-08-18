@@ -6,9 +6,9 @@ import { DEMO_ADMIN, DEMO_USER, useStore } from "@/lib/store";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Login — Webull Spinner" },
+      { title: "Login — Webull Ƨpinner" },
       { name: "description", content: "Satu halaman login untuk user dan admin." },
-      { property: "og:title", content: "Login — Webull Spinner" },
+      { property: "og:title", content: "Login — Webull Ƨpinner" },
       { property: "og:description", content: "Satu halaman login untuk user dan admin." },
     ],
   }),

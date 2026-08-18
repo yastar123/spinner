@@ -45,7 +45,7 @@ export function AdminShell({ title, children }: { title: string; children: React
           <SidebarHeader>
             <div className="flex items-center gap-2 px-2 py-1.5 font-semibold group-data-[collapsible=icon]:justify-center">
               <LayoutDashboard className="size-5 shrink-0" />
-              <span className="truncate group-data-[collapsible=icon]:hidden">Webull Spinner</span>
+              <span className="truncate group-data-[collapsible=icon]:hidden">Webull Ƨpinner</span>
             </div>
           </SidebarHeader>
           <SidebarContent>

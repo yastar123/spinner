@@ -103,7 +103,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
     <main className="flex min-h-screen w-full items-center justify-center bg-background px-4 py-12">
       <div className="flex w-full max-w-[500px] flex-col gap-4">
         <div className="mb-4 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Webull Spinner</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Webull Ƨpinner</h1>
           <p className="mt-1 text-sm text-muted-foreground">Demo aplikasi spin hadiah</p>
         </div>
         {children}

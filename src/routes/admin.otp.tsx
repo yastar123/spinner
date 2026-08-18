@@ -7,12 +7,12 @@ import { randomOtpCode, useStore } from "@/lib/store";
 export const Route = createFileRoute("/admin/otp")({
   head: () => ({
     meta: [
-      { title: "Kode OTP — Webull Spinner" },
+      { title: "Kode OTP — Webull Ƨpinner" },
       {
         name: "description",
         content: "Generate kode OTP dengan konfigurasi hadiah dan limit spin.",
       },
-      { property: "og:title", content: "Kode OTP — Webull Spinner" },
+      { property: "og:title", content: "Kode OTP — Webull Ƨpinner" },
       {
         property: "og:description",
         content: "Generate kode OTP dengan konfigurasi hadiah dan limit spin.",

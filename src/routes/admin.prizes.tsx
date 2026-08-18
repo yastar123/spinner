@@ -7,9 +7,9 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/admin/prizes")({
   head: () => ({
     meta: [
-      { title: "Kelola Hadiah — Webull Spinner" },
+      { title: "Kelola Hadiah — Webull Ƨpinner" },
       { name: "description", content: "Tambah, ubah, dan hapus daftar hadiah spinner." },
-      { property: "og:title", content: "Kelola Hadiah — Webull Spinner" },
+      { property: "og:title", content: "Kelola Hadiah — Webull Ƨpinner" },
       { property: "og:description", content: "Tambah, ubah, dan hapus daftar hadiah spinner." },
     ],
   }),

@@ -6,12 +6,12 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/admin/users")({
   head: () => ({
     meta: [
-      { title: "Data User — Webull Spinner" },
+      { title: "Data User — Webull Ƨpinner" },
       {
         name: "description",
         content: "Daftar user login beserta kode OTP dan hadiah yang didapat.",
       },
-      { property: "og:title", content: "Data User — Webull Spinner" },
+      { property: "og:title", content: "Data User — Webull Ƨpinner" },
       {
         property: "og:description",
         content: "Daftar user login beserta kode OTP dan hadiah yang didapat.",
