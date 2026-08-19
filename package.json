@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "db:init": "tsx -e \"import { initDb } from './src/lib/db'; initDb().then(() => console.log('Database initialized successfully.')).catch(console.error);\""
+    "db:init": "tsx -r dotenv/config -e \"import { initDb } from './src/lib/db'; initDb().then(() => console.log('Database initialized successfully.')).catch(console.error)\""
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -51,6 +51,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.4.2",
     "embla-carousel-react": "^8.6.0",
     "esbuild": "^0.28.2",
     "express": "^5.2.1",
