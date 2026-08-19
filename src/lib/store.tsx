@@ -39,6 +39,7 @@ type Ctx = {
   addPrize: (name: string, icon: string) => Promise<void>;
   updatePrize: (id: string, name: string, icon: string) => Promise<void>;
   deletePrize: (id: string) => Promise<void>;
+  seedDummyPrizes: () => Promise<void>;
   createOtp: (
     code: string,
     prizeIds: string[],
@@ -136,6 +137,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         try {
           const res = await fetch(`/api/prizes/${id}`, {
             method: "DELETE",
+          });
+          if (res.ok) {
+            await syncState();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      seedDummyPrizes: async () => {
+        try {
+          const res = await fetch("/api/prizes/seed-dummy", {
+            method: "POST",
           });
           if (res.ok) {
             await syncState();

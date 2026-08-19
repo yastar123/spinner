@@ -5,6 +5,7 @@ import {
   addPrize,
   updatePrize,
   deletePrize,
+  seedDummyPrizes,
   getOtps,
   addOtp,
   deleteOtp,
@@ -151,6 +152,16 @@ app.delete("/api/prizes/:id", async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: "Gagal menghapus hadiah" });
+  }
+});
+
+app.post("/api/prizes/seed-dummy", async (req, res) => {
+  try {
+    await seedDummyPrizes();
+    const prizes = await getPrizes();
+    res.json({ ok: true, prizes });
+  } catch (err) {
+    res.status(500).json({ error: "Gagal memuat data dummy hadiah" });
   }
 });
 

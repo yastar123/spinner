@@ -43,13 +43,21 @@ interface LocalState {
   }>;
 }
 
+export const DUMMY_10_PRIZES = [
+  { id: "p1", name: "iPhone 15 Pro", icon: "📱" },
+  { id: "p2", name: "Saldo $100", icon: "💵" },
+  { id: "p3", name: 'Smart TV 43"', icon: "📺" },
+  { id: "p4", name: "Free Saham Apple", icon: "📈" },
+  { id: "p5", name: "Kulkas 2 Pintu", icon: "🧊" },
+  { id: "p6", name: "Voucher Belanja $50", icon: "🎟️" },
+  { id: "p7", name: "Emas 1 Gram", icon: "🪙" },
+  { id: "p8", name: "Smartwatch Ultra", icon: "⌚" },
+  { id: "p9", name: "Air Fryer Digital", icon: "🍳" },
+  { id: "p10", name: "Zonk / Coba Lagi", icon: "🎈" },
+];
+
 const localState: LocalState = {
-  prizes: [
-    { id: "p1", name: "Bonus $10", icon: "💵" },
-    { id: "p2", name: "Free Stock", icon: "📈" },
-    { id: "p3", name: "Voucher 50%", icon: "🎟️" },
-    { id: "p4", name: "Zonk", icon: "🎈" },
-  ],
+  prizes: [...DUMMY_10_PRIZES],
   otps: [],
   users: [],
 };
@@ -92,16 +100,15 @@ export async function initDb() {
       );
     `);
 
-    // Seed default prizes if empty
+    // Seed default prizes if empty or fewer than 5
     const prizeCheck = await client.query("SELECT COUNT(*) FROM prizes");
     if (parseInt(prizeCheck.rows[0].count, 10) === 0) {
-      console.log("Seeding default prizes in PostgreSQL...");
-      for (const p of localState.prizes) {
-        await client.query("INSERT INTO prizes (id, name, icon) VALUES ($1, $2, $3)", [
-          p.id,
-          p.name,
-          p.icon,
-        ]);
+      console.log("Seeding 10 default prizes in PostgreSQL...");
+      for (const p of DUMMY_10_PRIZES) {
+        await client.query(
+          "INSERT INTO prizes (id, name, icon) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING",
+          [p.id, p.name, p.icon],
+        );
       }
     }
 
@@ -175,6 +182,24 @@ export async function deletePrize(id: string) {
     }
   }
   localState.prizes = localState.prizes.filter((p) => p.id !== id);
+}
+
+export async function seedDummyPrizes() {
+  if (pool) {
+    try {
+      for (const p of DUMMY_10_PRIZES) {
+        await pool.query(
+          "INSERT INTO prizes (id, name, icon) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, icon = EXCLUDED.icon",
+          [p.id, p.name, p.icon],
+        );
+      }
+      return;
+    } catch (err) {
+      console.error("DB Error in seedDummyPrizes, falling back:", err);
+      pool = null;
+    }
+  }
+  localState.prizes = [...DUMMY_10_PRIZES];
 }
 
 export async function getOtps() {

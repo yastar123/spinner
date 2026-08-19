@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Alert, Badge, Button, Card, PrizeIcon, PublicShell } from "@/components/ui-kit";
+import { Alert, Badge, Button, PrizeIcon } from "@/components/ui-kit";
 import { useStore, type Prize } from "@/lib/store";
 
 export const Route = createFileRoute("/spinner")({
@@ -21,18 +21,32 @@ export const Route = createFileRoute("/spinner")({
   component: SpinnerPage,
 });
 
-const SEGMENT_COLORS = [
-  "#38BDF8", // Sky Blue
-  "#A855F7", // Purple
-  "#EAB308", // Yellow
-  "#EF4444", // Red
-  "#22C55E", // Green
-  "#F97316", // Orange
-  "#EC4899", // Pink
-  "#06B6D4", // Cyan
-  "#14B8A6", // Teal
-  "#F59E0B", // Amber
+const FIXED_INITIAL_COLORS = [
+  "#10B981", // 1. Hijau (Green)
+  "#3B82F6", // 2. Biru (Blue)
+  "#8B5CF6", // 3. Ungu (Purple)
+  "#F59E0B", // 4. Kuning (Yellow)
+  "#EF4444", // 5. Merah (Red)
 ];
+
+const RANDOM_PALETTE = [
+  "#F97316", // 6. Orange
+  "#14B8A6", // 7. Teal
+  "#EC4899", // 8. Pink
+  "#6366F1", // 9. Indigo
+  "#06B6D4", // 10. Cyan
+  "#84CC16", // 11. Lime
+  "#D946EF", // 12. Fuchsia
+  "#0284C7", // 13. Sky
+  "#E11D48", // 14. Rose
+];
+
+function getSegmentColor(index: number): string {
+  if (index < FIXED_INITIAL_COLORS.length) {
+    return FIXED_INITIAL_COLORS[index];
+  }
+  return RANDOM_PALETTE[(index - FIXED_INITIAL_COLORS.length) % RANDOM_PALETTE.length];
+}
 
 function SpinnerPage() {
   const { state, currentUser, currentOtp, spin, logoutUser } = useStore();
@@ -49,7 +63,13 @@ function SpinnerPage() {
     else if (ready && currentUser && !currentUser.otpCode) navigate({ to: "/otp" });
   }, [ready, currentUser, navigate]);
 
-  if (!currentOtp) return <PublicShell>{null}</PublicShell>;
+  if (!currentOtp) {
+    return (
+      <main className="flex min-h-screen w-full items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </main>
+    );
+  }
 
   const prizes = state.prizes;
   const currentSpinIndex = currentOtp.used;
@@ -90,38 +110,51 @@ function SpinnerPage() {
 
   const gradient = prizes.length
     ? `conic-gradient(${prizes
-        .map(
-          (_, i) =>
-            `${SEGMENT_COLORS[i % SEGMENT_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`,
-        )
+        .map((_, i) => `${getSegmentColor(i)} ${i * seg}deg ${(i + 1) * seg}deg`)
         .join(", ")})`
-    : "conic-gradient(oklch(0.9 0.06 225) 0deg 360deg)";
+    : "conic-gradient(#10B981 0deg 360deg)";
 
   return (
-    <PublicShell>
-      <Card className="space-y-4 sm:space-y-6 p-4 sm:p-6 shadow-xl">
-        <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-3 sm:pb-4">
-          <div className="min-w-0 flex-1">
-            <p
-              className="truncate text-xs sm:text-sm font-semibold text-foreground"
-              title={currentUser?.email}
-            >
-              {currentUser?.email}
-            </p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground font-mono">
-              OTP:{" "}
-              <span className="font-semibold text-foreground tracking-wider">
-                {currentOtp.code}
-              </span>
-            </p>
-          </div>
-          <Badge className="shrink-0 text-[10px] sm:text-xs px-2.5 py-1">Sisa: {remaining}</Badge>
+    <main className="flex min-h-screen w-full flex-col justify-between bg-background text-foreground">
+      {/* Top Full-Width Header Bar */}
+      <header className="sticky top-0 z-30 flex w-full items-center justify-between border-b border-border bg-card/90 px-4 py-3 sm:px-8 sm:py-4 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+            Webull Ƨpinner
+          </h1>
+          <span className="hidden sm:inline-block text-xs font-mono bg-secondary px-3 py-1 rounded-full text-muted-foreground font-semibold">
+            {currentUser?.email}
+          </span>
         </div>
 
-        <div className="relative mx-auto aspect-square w-full max-w-[270px] min-[360px]:max-w-[300px] sm:max-w-[360px] md:max-w-[390px] select-none my-1 sm:my-2">
+        <div className="flex items-center gap-2.5 sm:gap-4">
+          <div className="text-right">
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-mono">
+              OTP:{" "}
+              <span className="font-bold text-foreground tracking-wider">{currentOtp.code}</span>
+            </p>
+          </div>
+          <Badge className="text-xs sm:text-sm px-3 py-1 font-bold">Sisa Spin: {remaining}</Badge>
+          <Button
+            variant="ghost"
+            className="text-xs px-3 py-1.5 h-auto rounded-lg"
+            onClick={async () => {
+              await logoutUser();
+              navigate({ to: "/login" });
+            }}
+          >
+            Keluar
+          </Button>
+        </div>
+      </header>
+
+      {/* Main Full-Width Content Container */}
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 py-6 sm:py-10">
+        {/* Large Spinner Container */}
+        <div className="relative mx-auto aspect-square w-full max-w-[340px] min-[420px]:max-w-[420px] sm:max-w-[500px] md:max-w-[560px] lg:max-w-[620px] select-none my-2 sm:my-4">
           {/* Static wheel with custom colors, thick black borders & dividers */}
           <div
-            className="relative h-full w-full rounded-full border-[8px] sm:border-[10px] md:border-[12px] border-neutral-900 bg-neutral-900 shadow-2xl overflow-hidden"
+            className="relative h-full w-full rounded-full border-[10px] sm:border-[14px] md:border-[18px] border-neutral-900 bg-neutral-900 shadow-2xl overflow-hidden"
             style={{
               background: gradient,
             }}
@@ -132,7 +165,7 @@ function SpinnerPage() {
               return (
                 <div
                   key={`divider-${i}`}
-                  className="absolute left-1/2 top-1/2 w-[2.5px] sm:w-[3.5px] h-[50%] bg-neutral-900 origin-top -translate-x-1/2"
+                  className="absolute left-1/2 top-1/2 w-[3px] sm:w-[4px] md:w-[5px] h-[50%] bg-neutral-900 origin-top -translate-x-1/2"
                   style={{
                     transform: `rotate(${dividerAngle}deg)`,
                   }}
@@ -140,26 +173,26 @@ function SpinnerPage() {
               );
             })}
 
-            {/* Labels of Prizes */}
+            {/* Labels & Icons of Prizes */}
             {prizes.map((p, i) => {
               const rad = ((i * seg + seg / 2 - 90) * Math.PI) / 180;
               const distPercent = prizes.length > 8 ? 35 : 32;
               return (
                 <div
                   key={p.id}
-                  className="absolute flex w-16 min-[360px]:w-20 sm:w-24 -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center text-white pointer-events-none"
+                  className="absolute flex w-20 min-[420px]:w-24 sm:w-32 md:w-36 -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center text-white pointer-events-none"
                   style={{
                     left: `${50 + distPercent * Math.cos(rad)}%`,
                     top: `${50 + distPercent * Math.sin(rad)}%`,
                   }}
                 >
-                  <div className="flex flex-col items-center gap-0.5 sm:gap-1 filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] max-w-full px-0.5">
+                  <div className="flex flex-col items-center gap-1 sm:gap-1.5 filter drop-shadow-[0_2px_5px_rgba(0,0,0,0.95)] max-w-full px-0.5">
                     <PrizeIcon
                       icon={p.icon}
                       name={p.name}
-                      className="h-4 w-4 min-[360px]:h-5 min-[360px]:w-5 sm:h-6 sm:w-6 object-contain shrink-0"
+                      className="h-6 w-6 min-[420px]:h-7 min-[420px]:w-7 sm:h-9 sm:w-9 md:h-11 md:w-11 object-contain shrink-0"
                     />
-                    <span className="line-clamp-2 break-words text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold leading-tight drop-shadow-md">
+                    <span className="line-clamp-2 break-words text-[10px] min-[420px]:text-xs sm:text-sm md:text-base font-extrabold leading-tight drop-shadow-md">
                       {p.name}
                     </span>
                   </div>
@@ -179,7 +212,7 @@ function SpinnerPage() {
           >
             <svg
               viewBox="0 0 300 300"
-              className="h-full w-full drop-shadow-[0_8px_16px_rgba(0,0,0,0.65)]"
+              className="h-full w-full drop-shadow-[0_10px_20px_rgba(0,0,0,0.75)]"
             >
               <defs>
                 <linearGradient id="needleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -239,96 +272,94 @@ function SpinnerPage() {
           </div>
         </div>
 
-        {error && <Alert>{error}</Alert>}
-        {remaining <= 0 && !error && <Alert>Kuota spin Anda sudah habis.</Alert>}
-
-        <Button
-          className="w-full text-sm sm:text-base py-3.5 sm:py-4 font-extrabold shadow-lg transition-transform active:scale-[0.98]"
-          onClick={handleSpin}
-          disabled={spinning || remaining <= 0 || prizes.length === 0}
-        >
-          {spinning ? (
-            <span className="flex items-center gap-2">
-              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              Memutar Roda...
-            </span>
-          ) : (
-            "PUTAR SEKARANG 🎲"
+        {/* Action Controls Container */}
+        <div className="w-full max-w-md mt-6 sm:mt-8 space-y-3">
+          {error && <Alert>{error}</Alert>}
+          {remaining <= 0 && !error && (
+            <p className="rounded-xl border border-border bg-secondary/80 px-4 py-3 text-center text-sm font-semibold text-muted-foreground">
+              Kuota spin Anda sudah habis.
+            </p>
           )}
-        </Button>
-        <Button
-          variant="ghost"
-          className="w-full text-xs sm:text-sm py-2.5"
-          onClick={async () => {
-            await logoutUser();
-            navigate({ to: "/login" });
-          }}
-        >
-          Keluar
-        </Button>
-      </Card>
 
-      {/* Riwayat Hadiah yang Didapatkan */}
-      <Card className="space-y-3 p-4 sm:p-5 shadow-lg">
-        <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
-          <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-            <span>🏆</span> Riwayat Hadiah Anda
-          </h3>
-          <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
-            Total: {currentUser?.prizesWon?.length ?? 0} Hadiah
-          </span>
+          <Button
+            className="w-full text-base sm:text-lg py-4 sm:py-5 font-black uppercase tracking-wider shadow-2xl transition-transform active:scale-[0.98] rounded-2xl"
+            onClick={handleSpin}
+            disabled={spinning || remaining <= 0 || prizes.length === 0}
+          >
+            {spinning ? (
+              <span className="flex items-center justify-center gap-2.5">
+                <span className="inline-block h-5 w-5 animate-spin rounded-full border-3 border-current border-t-transparent" />
+                Memutar Roda...
+              </span>
+            ) : (
+              "PUTAR SEKARANG 🎲"
+            )}
+          </Button>
         </div>
 
-        {currentUser?.prizesWon && currentUser.prizesWon.length > 0 ? (
-          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-            {currentUser.prizesWon.map((prizeName, idx) => {
-              const matchedPrize = state.prizes.find((p) => p.name === prizeName);
-              return (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between rounded-xl border border-border/80 bg-secondary/40 p-2.5 sm:p-3 hover:bg-secondary/60 transition-colors"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background shadow-xs shrink-0">
-                      {matchedPrize ? (
-                        <PrizeIcon
-                          icon={matchedPrize.icon}
-                          name={prizeName}
-                          className="h-5 w-5 object-contain"
-                        />
-                      ) : (
-                        <span className="text-sm">🎁</span>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs sm:text-sm font-bold text-foreground">{prizeName}</p>
-                      <p className="text-[10px] text-muted-foreground font-mono">
-                        Putaran Spin #{idx + 1}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-full px-2 py-0.5">
-                    ✓ Berhasil
-                  </span>
-                </div>
-              );
-            })}
+        {/* Full-width Riwayat Hadiah Section (Clean flat layout without card borders) */}
+        <div className="w-full max-w-4xl mt-12 sm:mt-16 border-t border-border pt-8 pb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm sm:text-base font-black uppercase tracking-wider text-foreground flex items-center gap-2">
+              <span>🏆</span> Riwayat Hadiah Anda
+            </h2>
+            <span className="text-xs font-bold text-muted-foreground bg-secondary px-3 py-1 rounded-full">
+              Total: {currentUser?.prizesWon?.length ?? 0} Hadiah
+            </span>
           </div>
-        ) : (
-          <div className="rounded-xl border border-dashed border-border/80 p-4 text-center">
-            <p className="text-xs text-muted-foreground font-medium">
-              Belum ada hadiah yang didapatkan.
-            </p>
-            <p className="text-[10px] text-muted-foreground/80 mt-0.5">
-              Putar roda spinner sekarang untuk memenangkan hadiah!
-            </p>
-          </div>
-        )}
-      </Card>
 
+          {currentUser?.prizesWon && currentUser.prizesWon.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {currentUser.prizesWon.map((prizeName, idx) => {
+                const matchedPrize = state.prizes.find((p) => p.name === prizeName);
+                return (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between border border-border bg-secondary/30 p-3.5 rounded-xl hover:bg-secondary/60 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-background shadow-xs shrink-0">
+                        {matchedPrize ? (
+                          <PrizeIcon
+                            icon={matchedPrize.icon}
+                            name={prizeName}
+                            className="h-6 w-6 object-contain"
+                          />
+                        ) : (
+                          <span className="text-base">🎁</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs sm:text-sm font-bold text-foreground">{prizeName}</p>
+                        <p className="text-[10px] text-muted-foreground font-mono">
+                          Putaran Spin #{idx + 1}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                      ✓ Berhasil
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="border border-dashed border-border p-6 rounded-xl text-center">
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+                Belum ada hadiah yang didapatkan.
+              </p>
+              <p className="text-[11px] text-muted-foreground/80 mt-1">
+                Putar roda spinner sekarang untuk memenangkan hadiah!
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Winning Modal */}
       {result && !spinning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <Card className="w-full max-w-sm space-y-4 text-center p-6 bg-card border-border shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm space-y-4 text-center p-6 bg-card border border-border rounded-3xl shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-2xl bg-secondary/80 p-2 shadow-inner">
               <PrizeIcon
                 icon={result.icon}
@@ -344,14 +375,14 @@ function SpinnerPage() {
               <p className="text-lg font-extrabold text-primary pt-1">{result.name}</p>
             </div>
             <Button
-              className="w-full py-3 text-sm font-bold shadow-md"
+              className="w-full py-3 text-sm font-bold shadow-md rounded-xl"
               onClick={() => setResult(null)}
             >
               Tutup & Lanjutkan
             </Button>
-          </Card>
+          </div>
         </div>
       )}
-    </PublicShell>
+    </main>
   );
 }
