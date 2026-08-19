@@ -21,7 +21,18 @@ export const Route = createFileRoute("/spinner")({
   component: SpinnerPage,
 });
 
-const SEGMENT_COLORS = ["oklch(0.68 0.14 232)", "oklch(0.52 0.13 245)"];
+const SEGMENT_COLORS = [
+  "#38BDF8", // Sky Blue
+  "#A855F7", // Purple
+  "#EAB308", // Yellow
+  "#EF4444", // Red
+  "#22C55E", // Green
+  "#F97316", // Orange
+  "#EC4899", // Pink
+  "#06B6D4", // Cyan
+  "#14B8A6", // Teal
+  "#F59E0B", // Amber
+];
 
 function SpinnerPage() {
   const { state, currentUser, currentOtp, spin, logoutUser } = useStore();
@@ -57,8 +68,15 @@ function SpinnerPage() {
     const finalPrizeId = res.prize?.id ?? winningId;
     const target = prizes.findIndex((p) => p.id === finalPrizeId);
     const idx = target >= 0 ? target : 0;
-    const final = 360 * 6 - (idx * seg + seg / 2);
-    setAngle((a) => a + (final - (a % 360)) + 360);
+
+    // Target angle points to the center of the winning segment
+    const target_angle = idx * seg + seg / 2;
+
+    // Rotate multiple full cycles and stop at the winning segment smoothly
+    const currentRotation = Math.floor(angle / 360);
+    const finalAngle = (currentRotation + 6) * 360 + target_angle;
+    setAngle(finalAngle);
+
     setTimeout(() => {
       setSpinning(false);
       setResult(res.prize ?? null);
@@ -67,7 +85,10 @@ function SpinnerPage() {
 
   const gradient = prizes.length
     ? `conic-gradient(${prizes
-        .map((_, i) => `${SEGMENT_COLORS[i % 2]} ${i * seg}deg ${(i + 1) * seg}deg`)
+        .map(
+          (_, i) =>
+            `${SEGMENT_COLORS[i % SEGMENT_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`,
+        )
         .join(", ")})`
     : "conic-gradient(oklch(0.9 0.06 225) 0deg 360deg)";
 
@@ -82,44 +103,87 @@ function SpinnerPage() {
           <Badge>Sisa spin: {remaining}</Badge>
         </div>
 
-        <div className="relative mx-auto aspect-square w-full max-w-xs">
-          <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2 text-2xl">▼</div>
+        <div className="relative mx-auto aspect-square w-full max-w-xs select-none">
+          {/* Static wheel with custom colors, thick black borders & dividers */}
           <div
-            className="h-full w-full rounded-full border-8 border-card shadow-lg"
+            className="relative h-full w-full rounded-full border-[10px] border-neutral-900 bg-neutral-900 shadow-xl overflow-hidden"
             style={{
               background: gradient,
-              transform: `rotate(${angle}deg)`,
-              transition: spinning ? "transform 4s cubic-bezier(0.15,0.9,0.2,1)" : undefined,
             }}
           >
+            {/* Sector Divider Lines */}
+            {prizes.map((_, i) => {
+              const dividerAngle = i * seg;
+              return (
+                <div
+                  key={`divider-${i}`}
+                  className="absolute left-1/2 top-1/2 w-[3px] h-[50%] bg-neutral-900 origin-top -translate-x-1/2"
+                  style={{
+                    transform: `rotate(${dividerAngle}deg)`,
+                  }}
+                />
+              );
+            })}
+
+            {/* Labels of Prizes */}
             {prizes.map((p, i) => {
               const rad = ((i * seg + seg / 2 - 90) * Math.PI) / 180;
               return (
                 <div
                   key={p.id}
-                  className="absolute flex w-24 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-center text-[11px] font-semibold leading-tight text-primary-foreground"
+                  className="absolute flex w-24 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-center text-[11px] font-bold leading-tight text-white"
                   style={{
-                    left: `${50 + 30 * Math.cos(rad)}%`,
-                    top: `${50 + 30 * Math.sin(rad)}%`,
+                    left: `${50 + 32 * Math.cos(rad)}%`,
+                    top: `${50 + 32 * Math.sin(rad)}%`,
                   }}
                 >
-                  <div
-                    className="flex flex-col items-center gap-1"
-                    style={{
-                      transform: `rotate(${-angle}deg)`,
-                      transition: spinning
-                        ? "transform 4s cubic-bezier(0.15,0.9,0.2,1)"
-                        : undefined,
-                    }}
-                  >
+                  <div className="flex flex-col items-center gap-1 filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
                     <PrizeIcon icon={p.icon} name={p.name} className="h-5 w-5" />
-                    <span className="drop-shadow">{p.name}</span>
+                    <span>{p.name}</span>
                   </div>
                 </div>
               );
             })}
           </div>
-          <div className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-primary bg-card" />
+
+          {/* Central Rotating Needle (Aesthetic Board Game Spinner) */}
+          <div
+            className="absolute left-1/2 top-1/2 z-20 h-[85%] w-[16%] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+            style={{
+              transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+              transition: spinning ? "transform 4s cubic-bezier(0.15,0.9,0.2,1)" : undefined,
+            }}
+          >
+            <svg
+              viewBox="0 0 60 300"
+              className="w-full h-full drop-shadow-[0_5px_8px_rgba(0,0,0,0.5)]"
+            >
+              {/* Retro spade arrow tip */}
+              <path
+                d="M 30 50 C 18 45, 8 32, 30 5 C 52 32, 42 45, 30 50 Z"
+                fill="#1A1A1A"
+                stroke="#333333"
+                strokeWidth="2"
+              />
+              {/* Shaft */}
+              <rect
+                x="26"
+                y="45"
+                width="8"
+                height="215"
+                fill="#1A1A1A"
+                stroke="#333333"
+                strokeWidth="1"
+              />
+
+              {/* Circular counterweight */}
+              <circle cx="30" cy="265" r="14" fill="#1A1A1A" stroke="#333333" strokeWidth="2" />
+
+              {/* Center Pivot cap */}
+              <circle cx="30" cy="150" r="18" fill="#111111" stroke="#333333" strokeWidth="2" />
+              <circle cx="30" cy="150" r="7" fill="#2A2A2A" />
+            </svg>
+          </div>
         </div>
 
         {error && <Alert>{error}</Alert>}
