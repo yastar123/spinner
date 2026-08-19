@@ -163,17 +163,18 @@ function SpinnerPage() {
             })}
           </div>
 
-          {/* Central Rotating Needle (Aesthetic Board Game Spinner) */}
+          {/* Central Rotating Needle (Aesthetic Board Game Spinner - Exactly Centered) */}
           <div
-            className="absolute left-1/2 top-1/2 z-20 h-[86%] w-[16%] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+            className="absolute inset-0 z-20 pointer-events-none"
             style={{
-              transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+              transform: `rotate(${angle}deg)`,
+              transformOrigin: "50% 50%",
               transition: spinning ? "transform 4s cubic-bezier(0.15,0.9,0.2,1)" : undefined,
             }}
           >
             <svg
-              viewBox="0 0 60 300"
-              className="w-full h-full drop-shadow-[0_6px_10px_rgba(0,0,0,0.6)]"
+              viewBox="0 0 300 300"
+              className="h-full w-full drop-shadow-[0_8px_16px_rgba(0,0,0,0.65)]"
             >
               <defs>
                 <linearGradient id="needleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -182,52 +183,53 @@ function SpinnerPage() {
                   <stop offset="100%" stopColor="#0d0d0d" />
                 </linearGradient>
                 <radialGradient id="capGrad" cx="40%" cy="40%" r="60%">
-                  <stop offset="0%" stopColor="#444444" />
-                  <stop offset="70%" stopColor="#1c1c1c" />
+                  <stop offset="0%" stopColor="#484848" />
+                  <stop offset="65%" stopColor="#1c1c1c" />
                   <stop offset="100%" stopColor="#0a0a0a" />
                 </radialGradient>
               </defs>
 
               {/* Retro spade arrow tip */}
               <path
-                d="M 30 52 C 16 46, 6 32, 30 4 C 54 32, 44 46, 30 52 Z"
+                d="M 150 16 Q 132 38 144 56 L 156 56 Q 168 38 150 16 Z"
                 fill="url(#needleGrad)"
-                stroke="#404040"
-                strokeWidth="2"
+                stroke="#111111"
+                strokeWidth="1.5"
               />
+
               {/* Shaft */}
               <rect
-                x="26"
-                y="48"
+                x="146"
+                y="54"
                 width="8"
-                height="212"
+                height="182"
                 fill="url(#needleGrad)"
-                stroke="#404040"
-                strokeWidth="1.5"
+                stroke="#111111"
+                strokeWidth="1"
               />
 
               {/* Circular counterweight at the bottom */}
               <circle
-                cx="30"
-                cy="265"
+                cx="150"
+                cy="242"
                 r="14"
                 fill="url(#needleGrad)"
-                stroke="#404040"
+                stroke="#111111"
                 strokeWidth="2"
               />
-              <circle cx="30" cy="265" r="5" fill="#333333" />
+              <circle cx="150" cy="242" r="5" fill="#333333" />
 
-              {/* Center Pivot cap (3D metallic effect) */}
+              {/* Center Pivot cap (3D metallic effect exactly at 150, 150) */}
               <circle
-                cx="30"
+                cx="150"
                 cy="150"
-                r="18"
+                r="20"
                 fill="url(#capGrad)"
-                stroke="#555555"
-                strokeWidth="2"
+                stroke="#444444"
+                strokeWidth="2.5"
               />
-              <circle cx="30" cy="150" r="10" fill="#1a1a1a" stroke="#333333" strokeWidth="1" />
-              <circle cx="28" cy="148" r="3" fill="#666666" opacity="0.6" />
+              <circle cx="150" cy="150" r="11" fill="#141414" stroke="#252525" strokeWidth="1.5" />
+              <circle cx="147" cy="147" r="3.5" fill="#666666" opacity="0.6" />
             </svg>
           </div>
         </div>
