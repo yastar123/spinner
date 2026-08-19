@@ -100,10 +100,12 @@ export function Badge({
 
 export function PublicShell({ children }: { children: ReactNode }) {
   return (
-    <main className="flex min-h-screen w-full items-center justify-center bg-background px-4 py-12">
-      <div className="flex w-full max-w-[500px] flex-col gap-4">
-        <div className="mb-4 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Webull Ƨpinner</h1>
+    <main className="flex min-h-screen w-full items-center justify-center bg-background px-3 py-6 sm:px-4 sm:py-10">
+      <div className="flex w-full max-w-[480px] flex-col gap-3 sm:gap-4">
+        <div className="mb-1 sm:mb-2 text-center">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            Webull Ƨpinner
+          </h1>
         </div>
         {children}
       </div>
