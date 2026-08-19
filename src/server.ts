@@ -21,10 +21,10 @@ async function getServerEntry(): Promise<ServerEntry> {
   return serverEntryPromise;
 }
 
-// Proxy client request to local Express server running on port 3001
+// Proxy client request to local Express server running on port 3002
 async function proxyToExpress(request: Request): Promise<Response> {
   const url = new URL(request.url);
-  const targetUrl = `http://127.0.0.1:3001${url.pathname}${url.search}`;
+  const targetUrl = `http://127.0.0.1:3002${url.pathname}${url.search}`;
 
   const headers = new Headers();
   request.headers.forEach((value, key) => {
@@ -40,7 +40,7 @@ async function proxyToExpress(request: Request): Promise<Response> {
     }
     headers.set(key, value);
   });
-  headers.set("host", "127.0.0.1:3001");
+  headers.set("host", "127.0.0.1:3002");
 
   let body: ArrayBuffer | null = null;
   if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) {
