@@ -256,6 +256,8 @@ app.post("/api/spin", async (req, res) => {
 });
 
 const PORT = 3002;
-app.listen(PORT, "127.0.0.1", () => {
-  console.log(`Backend ExpressJS server successfully listening on http://127.0.0.1:${PORT}`);
-});
+export function startExpressServer() {
+  app.listen(PORT, "127.0.0.1", () => {
+    console.log(`Backend ExpressJS server successfully listening on http://127.0.0.1:${PORT}`);
+  });
+}
