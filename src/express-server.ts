@@ -232,9 +232,18 @@ app.post("/api/spin", async (req, res) => {
     }
 
     const prizes = await getPrizes();
+    const currentSpinIndex = otp.used;
+
+    // Pick the prize assigned for this specific spin index, fallback to first prize
+    const targetPrizeId =
+      (Array.isArray(otp.prizeIds) ? otp.prizeIds[currentSpinIndex] : null) ||
+      (Array.isArray(otp.prizeIds) ? otp.prizeIds[0] : null) ||
+      otp.winningPrizeId;
+
     const prize =
+      prizes.find((p) => p.id === targetPrizeId) ??
       prizes.find((p) => p.id === otp.winningPrizeId) ??
-      prizes.find((p) => p.id === otp.prizeIds[0]);
+      prizes[0];
 
     if (!prize) {
       return res.status(400).json({ error: "Hadiah belum dikonfigurasi oleh admin" });
@@ -246,12 +255,13 @@ app.post("/api/spin", async (req, res) => {
       currentEmail,
       user.password,
       user.otpCode,
-      [...user.prizesWon, prize.name],
+      [...(user.prizesWon || []), prize.name],
       user.spins + 1,
     );
 
     res.json({ ok: true, prize });
   } catch (err) {
+    console.error("Spin error:", err);
     res.status(500).json({ error: "Gagal memutar roda hadiah" });
   }
 });

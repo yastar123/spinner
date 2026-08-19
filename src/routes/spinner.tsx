@@ -52,7 +52,12 @@ function SpinnerPage() {
   if (!currentOtp) return <PublicShell>{null}</PublicShell>;
 
   const prizes = state.prizes;
-  const winningId = currentOtp.winningPrizeId ?? currentOtp.prizeIds[0] ?? null;
+  const currentSpinIndex = currentOtp.used;
+  const winningId =
+    (Array.isArray(currentOtp.prizeIds) ? currentOtp.prizeIds[currentSpinIndex] : null) ??
+    (Array.isArray(currentOtp.prizeIds) ? currentOtp.prizeIds[0] : null) ??
+    currentOtp.winningPrizeId ??
+    null;
   const remaining = currentOtp.limit - currentOtp.used;
   const seg = prizes.length ? 360 / prizes.length : 360;
 
@@ -261,6 +266,64 @@ function SpinnerPage() {
         >
           Keluar
         </Button>
+      </Card>
+
+      {/* Riwayat Hadiah yang Didapatkan */}
+      <Card className="space-y-3 p-4 sm:p-5 shadow-lg">
+        <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
+          <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+            <span>🏆</span> Riwayat Hadiah Anda
+          </h3>
+          <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+            Total: {currentUser?.prizesWon?.length ?? 0} Hadiah
+          </span>
+        </div>
+
+        {currentUser?.prizesWon && currentUser.prizesWon.length > 0 ? (
+          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+            {currentUser.prizesWon.map((prizeName, idx) => {
+              const matchedPrize = state.prizes.find((p) => p.name === prizeName);
+              return (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between rounded-xl border border-border/80 bg-secondary/40 p-2.5 sm:p-3 hover:bg-secondary/60 transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background shadow-xs shrink-0">
+                      {matchedPrize ? (
+                        <PrizeIcon
+                          icon={matchedPrize.icon}
+                          name={prizeName}
+                          className="h-5 w-5 object-contain"
+                        />
+                      ) : (
+                        <span className="text-sm">🎁</span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm font-bold text-foreground">{prizeName}</p>
+                      <p className="text-[10px] text-muted-foreground font-mono">
+                        Putaran Spin #{idx + 1}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-full px-2 py-0.5">
+                    ✓ Berhasil
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-border/80 p-4 text-center">
+            <p className="text-xs text-muted-foreground font-medium">
+              Belum ada hadiah yang didapatkan.
+            </p>
+            <p className="text-[10px] text-muted-foreground/80 mt-0.5">
+              Putar roda spinner sekarang untuk memenangkan hadiah!
+            </p>
+          </div>
+        )}
       </Card>
 
       {result && !spinning && (
