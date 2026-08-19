@@ -46,7 +46,10 @@ type Ctx = {
     limit: number,
   ) => Promise<void>;
   deleteOtp: (code: string) => Promise<void>;
-  loginUser: (email: string, password: string) => Promise<boolean>;
+  loginUser: (
+    email: string,
+    password: string,
+  ) => Promise<{ ok: boolean; isAdmin?: boolean } | null>;
   logoutUser: () => Promise<void>;
   submitOtp: (code: string) => Promise<{ ok: boolean; error?: string }>;
   spin: () => Promise<{ ok: boolean; prize?: Prize; error?: string }>;
@@ -175,13 +178,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             body: JSON.stringify({ email, password }),
           });
           if (res.ok) {
+            const data = await res.json();
             await syncState();
-            return true;
+            return { ok: true, isAdmin: data.isAdmin };
           }
         } catch (err) {
           console.error(err);
         }
-        return false;
+        return null;
       },
       logoutUser: async () => {
         try {

@@ -8,6 +8,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
+    "start": "node .output/server/index.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "db:init": "tsx -r dotenv/config -e \"import { initDb } from './src/lib/db'; initDb().then(() => console.log('Database initialized successfully.')).catch(console.error)\""

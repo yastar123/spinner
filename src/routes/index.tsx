@@ -41,17 +41,14 @@ function Index() {
               return;
             }
 
-            // Try admin login first dynamically
-            const isAdmin = await setAdmin(true, email.trim(), password);
-            if (isAdmin) {
-              navigate({ to: "/admin" });
-              return;
-            }
-
-            // Fallback to user login
-            const success = await loginUser(email.trim(), password);
-            if (success) {
-              navigate({ to: "/otp" });
+            // Call unified login
+            const res = await loginUser(email.trim(), password);
+            if (res?.ok) {
+              if (res.isAdmin) {
+                navigate({ to: "/admin" });
+              } else {
+                navigate({ to: "/otp" });
+              }
             } else {
               setError("Gagal masuk, silakan periksa kredensial Anda");
             }

