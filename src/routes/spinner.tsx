@@ -99,13 +99,13 @@ function SpinnerPage() {
 
     // Rotate multiple full cycles and stop at the winning segment smoothly
     const currentRotation = Math.floor(angle / 360);
-    const finalAngle = (currentRotation + 6) * 360 + target_angle;
+    const finalAngle = (currentRotation + 10) * 360 + target_angle;
     setAngle(finalAngle);
 
     setTimeout(() => {
       setSpinning(false);
       setResult(res.prize ?? null);
-    }, 4000);
+    }, 8000);
   };
 
   const gradient = prizes.length
@@ -207,7 +207,7 @@ function SpinnerPage() {
             style={{
               transform: `rotate(${angle}deg)`,
               transformOrigin: "50% 50%",
-              transition: spinning ? "transform 4s cubic-bezier(0.15,0.9,0.2,1)" : undefined,
+              transition: spinning ? "transform 8s cubic-bezier(0.15,0.9,0.2,1)" : undefined,
             }}
           >
             <svg
